@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>GuessMe — Personal Guessing Game</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#080b14;
+    --card:#111625;
+    --card2:#171d30;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --primary:#7c3aed;
+    --primary2:#a855f7;
+    --green:#22c55e;
+    --red:#ef4444;
+    --border:#252d42;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:
+        radial-gradient(circle at 20% 10%,rgba(124,58,237,.22),transparent 30%),
+        radial-gradient(circle at 80% 90%,rgba(168,85,247,.15),transparent 30%),
+        var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+/* ================= PARTICLES ================= */
+
+.particles{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:-1;
+}
+
+.particle{
+    position:absolute;
+    width:4px;
+    height:4px;
+    background:#a855f7;
+    border-radius:50%;
+    opacity:.5;
+    animation:float 8s linear infinite;
+}
+
+@keyframes float{
+    from{
+        transform:translateY(110vh) scale(.5);
+        opacity:0;
+    }
+    20%{opacity:.6;}
+    80%{opacity:.5;}
+    to{
+        transform:translateY(-10vh) scale(1);
+        opacity:0;
+    }
+}
+
+/* ================= HEADER ================= */
+
+header{
+    width:100%;
+    border-bottom:1px solid var(--border);
+    background:rgba(8,11,20,.75);
+    backdrop-filter:blur(15px);
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+
+.header-inner{
+    max-width:900px;
+    margin:auto;
+    padding:16px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:900;
+    background:linear-gradient(90deg,#a855f7,#7c3aed);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.timer{
+    display:none;
+    padding:9px 14px;
+    border-radius:10px;
+    background:#1d2440;
+    font-weight:bold;
+}
+
+/* ================= MAIN ================= */
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:25px 18px 60px;
+}
+
+/* ================= SCREENS ================= */
+
+.screen{
+    display:none;
+    animation:fadeUp .5s ease;
+}
+
+.screen.active{
+    display:block;
+}
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(25px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* ================= HOME ================= */
+
+.hero{
+    text-align:center;
+    padding:65px 15px 35px;
+}
+
+.hero-badge{
+    display:inline-block;
+    padding:7px 13px;
+    border:1px solid #493078;
+    border-radius:30px;
+    background:#161126;
+    color:#c084fc;
+    font-size:13px;
+    margin-bottom:20px;
+}
+
+.hero h1{
+    font-size:clamp(40px,8vw,72px);
+    line-height:1;
+    margin-bottom:20px;
+}
+
+.gradient{
+    background:linear-gradient(90deg,#c084fc,#7c3aed,#ec4899);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.hero p{
+    max-width:620px;
+    margin:auto;
+    color:var(--muted);
+    font-size:17px;
+    line-height:1.7;
+}
+
+.home-card{
+    max-width:620px;
+    margin:25px auto;
+    background:rgba(17,22,37,.85);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:25px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-bottom:25px;
+}
+
+.stat{
+    background:var(--card2);
+    border:1px solid var(--border);
+    padding:18px 10px;
+    border-radius:14px;
+    text-align:center;
+}
+
+.stat strong{
+    display:block;
+    font-size:25px;
+    color:#c084fc;
+}
+
+.stat span{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.btn{
+    border:0;
+    border-radius:12px;
+    padding:14px 22px;
+    font-weight:bold;
+    font-size:15px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.btn-primary{
+    color:white;
+    background:linear-gradient(135deg,#7c3aed,#a855f7);
+    box-shadow:0 10px 30px rgba(124,58,237,.25);
+}
+
+.btn-secondary{
+    color:white;
+    background:#1b2235;
+    border:1px solid var(--border);
+}
+
+.full{
+    width:100%;
+}
+
+/* ================= CREATOR ================= */
+
+.panel{
+    background:rgba(17,22,37,.9);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:24px;
+}
+
+.panel h2{
+    margin-bottom:8px;
+}
+
+.panel-description{
+    color:var(--muted);
+    line-height:1.6;
+    margin-bottom:20px;
+}
+
+.question-builder{
+    display:grid;
+    gap:14px;
+}
+
+.builder-item{
+    background:#0d1220;
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:17px;
+}
+
+.builder-item h3{
+    font-size:15px;
+    margin-bottom:12px;
+}
+
+input,textarea{
+    width:100%;
+    background:#171d30;
+    color:white;
+    border:1px solid #303950;
+    border-radius:9px;
+    padding:11px;
+    outline:none;
+    font:inherit;
+}
+
+input:focus,textarea:focus{
+    border-color:#8b5cf6;
+}
+
+.option-inputs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    margin-top:9px;
+}
+
+.answer-select{
+    margin-top:9px;
+}
+
+/* ================= QUIZ ================= */
+
+.quiz-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:15px;
+}
+
+.progress-wrap{
+    flex:1;
+}
+
+.progress-label{
+    display:flex;
+    justify-content:space-between;
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:7px;
+}
+
+.progress{
+    height:8px;
+    background:#20283c;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0;
+    background:linear-gradient(90deg,#7c3aed,#c084fc);
+    transition:.4s;
+}
+
+.quiz-card{
+    background:rgba(17,22,37,.95);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:28px;
+}
+
+.question-label{
+    color:#a78bfa;
+    font-size:13px;
+    font-weight:bold;
+    margin-bottom:13px;
+}
+
+.question-title{
+    font-size:clamp(21px,4vw,29px);
+    line-height:1.4;
+    margin-bottom:25px;
+}
+
+.options{
+    display:grid;
+    gap:12px;
+}
+
+.option{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:15px;
+    border-radius:13px;
+    border:2px solid var(--border);
+    background:#12182a;
+    color:white;
+    text-align:left;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.option:hover{
+    border-color:#7c3aed;
+    transform:translateX(3px);
+}
+
+.option.selected{
+    border-color:#8b5cf6;
+    background:#211638;
+}
+
+.option-letter{
+    min-width:34px;
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:9px;
+    background:#242c43;
+    font-weight:bold;
+}
+
+.option.selected .option-letter{
+    background:#7c3aed;
+}
+
+.quiz-navigation{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:18px;
+}
+
+/* ================= RESULT ================= */
+
+.result{
+    text-align:center;
+}
+
+.result-card{
+    background:rgba(17,22,37,.95);
+    border:1px solid var(--border);
+    border-radius:25px;
+    padding:35px 22px;
+}
+
+.result-card h1{
+    font-size:35px;
+    margin-bottom:10px;
+}
+
+.score-ring{
+    width:170px;
+    height:170px;
+    margin:30px auto;
+    border-radius:50%;
+    border:10px solid #7c3aed;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    animation:pop .7s ease;
+}
+
+@keyframes pop{
+    0%{
+        transform:scale(.3);
+        opacity:0;
+    }
+    70%{
+        transform:scale(1.1);
+    }
+    100%{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.score{
+    font-size:43px;
+    font-weight:900;
+    color:#c084fc;
+}
+
+.score-label{
+    color:var(--muted);
+}
+
+.result-message{
+    color:var(--muted);
+    margin-bottom:25px;
+}
+
+/* ================= REVIEW ================= */
+
+.review{
+    text-align:left;
+    margin-top:30px;
+}
+
+.review h3{
+    margin-bottom:15px;
+}
+
+.review-item{
+    background:#0d1220;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:10px;
+}
+
+.review-item.correct{
+    border-left:4px solid var(--green);
+}
+
+.review-item.wrong{
+    border-left:4px solid var(--red);
+}
+
+.review-question{
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.review-line{
+    color:var(--muted);
+    font-size:14px;
+    margin-top:4px;
+}
+
+/* ================= SHARE ================= */
+
+.share-box{
+    margin-top:20px;
+    background:#0d1220;
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:15px;
+}
+
+.share-box p{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:9px;
+}
+
+.share-url{
+    display:flex;
+    gap:8px;
+}
+
+.share-url input{
+    flex:1;
+}
+
+.copied{
+    color:#4ade80;
+    font-size:13px;
+    margin-top:7px;
+    display:none;
+}
+
+/* ================= TOAST ================= */
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:25px;
+    transform:translate(-50%,20px);
+    background:#171d30;
+    border:1px solid #343d57;
+    color:white;
+    padding:12px 18px;
+    border-radius:12px;
+    opacity:0;
+    pointer-events:none;
+    transition:.3s;
+    z-index:100;
+}
+
+.toast.show{
+    opacity:1;
+    transform:translate(-50%,0);
+}
+
+/* ================= CONFETTI ================= */
+
+.confetti{
+    position:fixed;
+    width:8px;
+    height:14px;
+    top:-20px;
+    z-index:99;
+    animation:confettiFall 2.5s linear forwards;
+}
+
+@keyframes confettiFall{
+    to{
+        transform:translateY(110vh) rotate(720deg);
+        opacity:0;
+    }
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:600px){
+
+    .container{
+        padding:18px 12px 40px;
+    }
+
+    .hero{
+        padding-top:40px;
+    }
+
+    .hero h1{
+        font-size:43px;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr 1fr;
+    }
+
+    .stat{
+        padding:14px 5px;
+    }
+
+    .quiz-card{
+        padding:20px 15px;
+    }
+
+    .option-inputs{
+        grid-template-columns:1fr;
+    }
+
+    .quiz-navigation{
+        flex-direction:column;
+    }
+
+    .quiz-navigation .btn{
+        width:100%;
+    }
+
+    .share-url{
+        flex-direction:column;
+    }
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="particles" id="particles"></div>
+
+<header>
+    <div class="header-inner">
+        <div class="logo">GuessMe</div>
+        <div class="timer" id="timer">10:00</div>
+    </div>
+</header>
+
+
+<main class="container">
+
+<!-- ================= HOME ================= -->
+
+<section class="screen active" id="homeScreen">
+
+    <div class="hero">
+
+        <div class="hero-badge">
+            ✨ PERSONAL GUESSING GAME
+        </div>
+
+        <h1>
+            How Well Do You<br>
+            <span class="gradient">Know Me?</span>
+        </h1>
+
+        <p>
+            Apne doston ko challenge karo aur dekho
+            woh tumhe kitna achhe se jaante hain.
+        </p>
+
+    </div>
+
+
+    <div class="home-card">
+
+        <div class="stats">
+
+            <div class="stat">
+                <strong>15</strong>
+                <span>Questions</span>
+            </div>
+
+            <div class="stat">
+                <strong>10</strong>
+                <span>Random</span>
+            </div>
+
+            <div class="stat">
+                <strong>∞</strong>
+                <span>Attempts</span>
+            </div>
+
+        </div>
+
+
+        <button
+            class="btn btn-primary full"
+            id="createBtn">
+            🎯 Create My Quiz
+        </button>
+
+        <br><br>
+
+        <button
+            class="btn btn-secondary full"
+            id="playBtn">
+            🎮 Play Quiz
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= CREATOR ================= -->
+
+<section class="screen" id="creatorScreen">
+
+    <div class="panel">
+
+        <h2>🎯 Create Your Quiz</h2>
+
+        <p class="panel-description">
+            15 questions aur unke 4 options set karo.
+            Correct answer bhi select karo.
+            Phir share link generate karke friend ko bhejo.
+        </p>
+
+        <div
+            class="question-builder"
+            id="builder">
+        </div>
+
+        <br>
+
+        <button
+            class="btn btn-primary full"
+            id="generateBtn">
+            🔗 Generate Share Link
+        </button>
+
+        <div
+            class="share-box"
+            id="shareBox"
+            style="display:none;">
+
+            <p>
+                Ye link apne friend ko bhejo:
+            </p>
+
+            <div class="share-url">
+
+                <input
+                    id="shareUrl"
+                    readonly>
+
+                <button
+                    class="btn btn-primary"
+                    id="copyBtn">
+                    Copy
+                </button>
+
+            </div>
+
+            <div
+                class="copied"
+                id="copied">
+                ✓ Link copied!
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= QUIZ ================= -->
+
+<section class="screen" id="quizScreen">
+
+    <div class="quiz-top">
+
+        <div class="progress-wrap">
+
+            <div class="progress-label">
+                <span id="progressText">
+                    Question 1/10
+                </span>
+
+                <span id="answeredText">
+                    0/10
+                </span>
+            </div>
+
+            <div class="progress">
+                <div
+                    class="progress-bar"
+                    id="progressBar">
+                </div>
+            </div>
+
+        </div>
+
+        <div
+            class="timer"
+            id="quizTimer"
+            style="display:block;">
+            10:00
+        </div>
+
+    </div>
+
+
+    <div class="quiz-card">
+
+        <div
+            class="question-label"
+            id="questionLabel">
+            QUESTION 1
+        </div>
+
+        <div
+            class="question-title"
+            id="questionTitle">
+        </div>
+
+        <div
+            class="options"
+            id="options">
+        </div>
+
+    </div>
+
+
+    <div class="quiz-navigation">
+
+        <button
+            class="btn btn-secondary"
+            id="previousBtn">
+            ← Previous
+        </button>
+
+        <button
+            class="btn btn-primary"
+            id="nextBtn">
+            Next →
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= RESULT ================= -->
+
+<section class="screen result" id="resultScreen">
+
+    <div class="result-card">
+
+        <h1>🎉 Quiz Complete!</h1>
+
+        <p class="result-message" id="resultMessage"></p>
+
+
+        <div class="score-ring">
+
+            <div
+                class="score"
+                id="score">
+                0/10
+            </div>
+
+            <div class="score-label">
+                SCORE
+            </div>
+
+        </div>
+
+
+        <button
+            class="btn btn-primary"
+            id="againBtn">
+            🔄 Play Again
+        </button>
+
+
+        <div
+            class="review"
+            id="review">
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<div class="toast" id="toast">
+    Link copied!
+</div>
+
+
+<script>
+
+/* =========================================================
+   DEFAULT 15 QUESTIONS
+========================================================= */
+
+const defaultQuestions = [
+
+{
+ question:"Mera sabse pasandida insaan kaun hai?",
+ options:["Mummy","Papa","GF/BF","Friend"],
+ answer:0
+},
+
+{
+ question:"Mera favorite place kaunsa hai?",
+ options:["Delhi","Mumbai","Restaurant","Mall"],
+ answer:0
+},
+
+{
+ question:"Mera favorite drink kya hai?",
+ options:["Cold drink","Juice","Coffee","Tea"],
+ answer:0
+},
+
+{
+ question:"Mujhe sabse zyada kya pasand hai?",
+ options:["Gaming","Movies","Music","Reading"],
+ answer:0
+},
+
+{
+ question:"Mera favorite season kaunsa hai?",
+ options:["Winter","Summer","Monsoon","Spring"],
+ answer:0
+},
+
+{
+ question:"Mera favorite subject kaunsa hai?",
+ options:["Computer","Maths","Science","English"],
+ answer:0
+},
+
+{
+ question:"Mujhe free time mein kya karna pasand hai?",
+ options:["Phone chalana","Game khelna","Books padhna","Music sunna"],
+ answer:0
+},
+
+{
+ question:"Mera favorite animal kaunsa hai?",
+ options:["Dog","Cat","Tiger","Rabbit"],
+ answer:0
+},
+
+{
+ question:"Mujhe kis type ka music pasand hai?",
+ options:["Bollywood","Lo-fi","Rap","Classical"],
+ answer:0
+},
+
+{
+ question:"Mera favorite social media platform kaunsa hai?",
+ options:["YouTube","Instagram","Snapchat","Facebook"],
+ answer:0
+},
+
+{
+ question:"Mujhe shopping mein kya lena pasand hai?",
+ options:["Clothes","Electronics","Books","Shoes"],
+ answer:0
+},
+
+{
+ question:"Mujhe sabse zyada kis cheez se irritation hoti hai?",
+ options:["Noise","Waiting","Lies","Crowds"],
+ answer:0
+},
+
+{
+ question:"Mera ideal weekend kaisa hoga?",
+ options:["Ghar par chill","Friends ke saath","Gaming","Travelling"],
+ answer:0
+},
+
+{
+ question:"Mujhe raat ya din mein kya pasand hai?",
+ options:["Early morning","Afternoon","Evening","Late night"],
+ answer:0
+},
+
+{
+ question:"Agar mujhe ek superpower mile to main kya choose karunga?",
+ options:["Flying","Teleportation","Invisibility","Time travel"],
+ answer:0
+}
+
+];
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+const TOTAL_POOL = 15;
+const QUESTIONS_TO_ASK = 10;
+const TIME_LIMIT = 10 * 60;
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let pool = [];
+let quiz = [];
+let answers = [];
+let current = 0;
+let timeLeft = TIME_LIMIT;
+let timerInterval = null;
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const homeScreen =
+document.getElementById("homeScreen");
+
+const creatorScreen =
+document.getElementById("creatorScreen");
+
+const quizScreen =
+document.getElementById("quizScreen");
+
+const resultScreen =
+document.getElementById("resultScreen");
+
+const builder =
+document.getElementById("builder");
+
+const createBtn =
+document.getElementById("createBtn");
+
+const playBtn =
+document.getElementById("playBtn");
+
+const generateBtn =
+document.getElementById("generateBtn");
+
+const shareBox =
+document.getElementById("shareBox");
+
+const shareUrl =
+document.getElementById("shareUrl");
+
+const copyBtn =
+document.getElementById("copyBtn");
+
+const copied =
+document.getElementById("copied");
+
+const progressText =
+document.getElementById("progressText");
+
+const answeredText =
+document.getElementById("answeredText");
+
+const progressBar =
+document.getElementById("progressBar");
+
+const questionLabel =
+document.getElementById("questionLabel");
+
+const questionTitle =
+document.getElementById("questionTitle");
+
+const options =
+document.getElementById("options");
+
+const previousBtn =
+document.getElementById("previousBtn");
+
+const nextBtn =
+document.getElementById("nextBtn");
+
+const quizTimer =
+document.getElementById("quizTimer");
+
+const score =
+document.getElementById("score");
+
+const resultMessage =
+document.getElementById("resultMessage");
+
+const review =
+document.getElementById("review");
+
+const againBtn =
+document.getElementById("againBtn");
+
+const toast =
+document.getElementById("toast");
+
+
+/* =========================================================
+   SCREEN SWITCH
+========================================================= */
+
+function showScreen(screen){
+
+    document
+    .querySelectorAll(".screen")
+    .forEach(s => s.classList.remove("active"));
+
+    screen.classList.add("active");
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+
+/* =========================================================
+   PARTICLES
+========================================================= */
+
+function createParticles(){
+
+    const container =
+    document.getElementById("particles");
+
+    for(let i=0;i<35;i++){
+
+        const p =
+        document.createElement("div");
+
+        p.className="particle";
+
+        p.style.left =
+        Math.random()*100+"%";
+
+        p.style.animationDelay =
+        Math.random()*8+"s";
+
+        p.style.animationDuration =
+        (5+Math.random()*7)+"s";
+
+        container.appendChild(p);
+    }
+}
+
+
+/* =========================================================
+   BUILD CREATOR
+========================================================= */
+
+function buildCreator(){
+
+    builder.innerHTML="";
+
+    defaultQuestions.forEach((q,index)=>{
+
+        const item =
+        document.createElement("div");
+
+        item.className="builder-item";
+
+        item.innerHTML=`
+
+            <h3>
+                Question ${index+1}
+            </h3>
+
+            <input
+                class="question-input"
+                value="${escapeAttr(q.question)}"
+                placeholder="Question">
+
+            <div class="option-inputs">
+
+                <input
+                    class="option-input"
+                    value="${escapeAttr(q.options[0])}"
+                    placeholder="Option A">
+
+                <input
+                    class="option-input"
+                    value="${escapeAttr(q.options[1])}"
+                    placeholder="Option B">
+
+                <input
+                    class="option-input"
+                    value="${escapeAttr(q.options[2])}"
+                    placeholder="Option C">
+
+                <input
+                    class="option-input"
+                    value="${escapeAttr(q.options[3])}"
+                    placeholder="Option D">
+
+            </div>
+
+            <select class="answer-select">
+
+                <option value="0"
+                ${q.answer===0?"selected":""}>
+                    Correct Answer: A
+                </option>
+
+                <option value="1"
+                ${q.answer===1?"selected":""}>
+                    Correct Answer: B
+                </option>
+
+                <option value="2"
+                ${q.answer===2?"selected":""}>
+                    Correct Answer: C
+                </option>
+
+                <option value="3"
+                ${q.answer===3?"selected":""}>
+                    Correct Answer: D
+                </option>
+
+            </select>
+        `;
+
+        builder.appendChild(item);
+    });
+}
+
+
+/* =========================================================
+   READ CREATOR DATA
+========================================================= */
+
+function getCreatorData(){
+
+    const items =
+    [...document.querySelectorAll(".builder-item")];
+
+    return items.map(item=>{
+
+        const question =
+        item.querySelector(".question-input").value.trim();
+
+        const opts =
+        [...item.querySelectorAll(".option-input")]
+        .map(x=>x.value.trim());
+
+        const answer =
+        Number(
+            item.querySelector(".answer-select").value
+        );
+
+        return {
+            question,
+            options:opts,
+            answer
+        };
+
+    });
+}
+
+
+/* =========================================================
+   ENCODE QUIZ
+========================================================= */
+
+function encodeData(data){
+
+    const json =
+    JSON.stringify(data);
+
+    const bytes =
+    new TextEncoder().encode(json);
+
+    let binary="";
+
+    bytes.forEach(byte=>{
+        binary += String.fromCharCode(byte);
+    });
+
+    return btoa(binary)
+    .replace(/\+/g,"-")
+    .replace(/\//g,"_")
+    .replace(/=/g,"");
+}
+
+
+/* =========================================================
+   DECODE QUIZ
+========================================================= */
+
+function decodeData(encoded){
+
+    try{
+
+        let base =
+        encoded
+        .replace(/-/g,"+")
+        .replace(/_/g,"/");
+
+        while(base.length%4)
+            base+="=";
+
+        const binary =
+        atob(base);
+
+        const bytes =
+        Uint8Array.from(
+            binary,
+            c=>c.charCodeAt(0)
+        );
+
+        const json =
+        new TextDecoder().decode(bytes);
+
+        return JSON.parse(json);
+
+    }catch(error){
+
+        return null;
+    }
+}
+
+
+/* =========================================================
+   GENERATE LINK
+========================================================= */
+
+generateBtn.addEventListener("click",()=>{
+
+    const data =
+    getCreatorData();
+
+    for(let i=0;i<data.length;i++){
+
+        if(
+            !data[i].question ||
+            data[i].options.some(x=>!x)
+        ){
+
+            showToast(
+                `Question ${i+1} complete karo.`
+            );
+
+            return;
+        }
+    }
+
+
+    const encoded =
+    encodeData(data);
+
+
+    const url =
+    location.origin +
+    location.pathname +
+    "?quiz=" +
+    encoded;
+
+
+    shareUrl.value=url;
+
+    shareBox.style.display="block";
+
+    shareBox.scrollIntoView({
+        behavior:"smooth"
+    });
+
+});
+
+
+/* =========================================================
+   COPY LINK
+========================================================= */
+
+copyBtn.addEventListener("click",async()=>{
+
+    const text =
+    shareUrl.value;
+
+    try{
+
+        await navigator.clipboard.writeText(text);
+
+    }catch{
+
+        shareUrl.select();
+
+        document.execCommand("copy");
+    }
+
+    copied.style.display="block";
+
+    showToast("✓ Share link copied!");
+
+});
+
+
+/* =========================================================
+   SHUFFLE
+========================================================= */
+
+function shuffle(array){
+
+    const copy=[...array];
+
+    for(let i=copy.length-1;i>0;i--){
+
+        const j =
+        Math.floor(Math.random()*(i+1));
+
+        [copy[i],copy[j]] =
+        [copy[j],copy[i]];
+    }
+
+    return copy;
+}
+
+
+/* =========================================================
+   START QUIZ
+========================================================= */
+
+function startQuiz(){
+
+    if(pool.length<QUESTIONS_TO_ASK){
+
+        showToast(
+            "Quiz mein kam se kam 10 questions hone chahiye."
+        );
+
+        return;
+    }
+
+
+    quiz =
+    shuffle(pool)
+    .slice(0,QUESTIONS_TO_ASK);
+
+
+    answers =
+    new Array(QUESTIONS_TO_ASK)
+    .fill(null);
+
+
+    current=0;
+
+    timeLeft=TIME_LIMIT;
+
+    showScreen(quizScreen);
+
+    startTimer();
+
+    renderQuestion();
+}
+
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+function startTimer(){
+
+    clearInterval(timerInterval);
+
+    updateTimer();
+
+    timerInterval =
+    setInterval(()=>{
+
+        timeLeft--;
+
+        updateTimer();
+
+        if(timeLeft<=0){
+
+            clearInterval(timerInterval);
+
+            finishQuiz();
+
+        }
+
+    },1000);
+}
+
+
+function updateTimer(){
+
+    const min =
+    Math.floor(timeLeft/60);
+
+    const sec =
+    timeLeft%60;
+
+    const text =
+    `${String(min).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+
+    quizTimer.textContent=text;
+
+    if(timeLeft<=60){
+
+        quizTimer.style.background="#451a1a";
+
+        quizTimer.style.color="#fca5a5";
+
+    }else{
+
+        quizTimer.style.background="#1d2440";
+
+        quizTimer.style.color="#c4b5fd";
+    }
+}
+
+
+/* =========================================================
+   RENDER QUESTION
+========================================================= */
+
+function renderQuestion(){
+
+    const q=quiz[current];
+
+    questionLabel.textContent =
+    `QUESTION ${current+1}`;
+
+    questionTitle.textContent =
+    q.question;
+
+
+    progressText.textContent =
+    `Question ${current+1}/${QUESTIONS_TO_ASK}`;
+
+
+    const answered =
+    answers.filter(x=>x!==null).length;
+
+
+    answeredText.textContent =
+    `${answered}/${QUESTIONS_TO_ASK}`;
+
+
+    progressBar.style.width =
+    `${((current+1)/QUESTIONS_TO_ASK)*100}%`;
+
+
+    options.innerHTML="";
+
+
+    q.options.forEach((option,index)=>{
+
+        const btn =
+        document.createElement("button");
+
+        btn.className="option";
+
+        btn.type="button";
+
+
+        if(answers[current]===index){
+
+            btn.classList.add("selected");
+        }
+
+
+        const letter =
+        document.createElement("span");
+
+        letter.className="option-letter";
+
+        letter.textContent =
+        String.fromCharCode(65+index);
+
+
+        btn.appendChild(letter);
+
+        btn.appendChild(
+            document.createTextNode(option)
+        );
+
+
+        btn.addEventListener("click",()=>{
+
+            answers[current]=index;
+
+            renderQuestion();
+
+        });
+
+
+        options.appendChild(btn);
+
+    });
+
+
+    previousBtn.disabled =
+    current===0;
+
+
+    nextBtn.textContent =
+    current===QUESTIONS_TO_ASK-1
+    ? "Submit ✓"
+    : "Next →";
+}
+
+
+/* =========================================================
+   NEXT
+========================================================= */
+
+nextBtn.addEventListener("click",()=>{
+
+    if(current===QUESTIONS_TO_ASK-1){
+
+        const unanswered =
+        answers.filter(x=>x===null).length;
+
+        if(unanswered>0){
+
+            showToast(
+                `${unanswered} question unanswered hai.`
+            );
+
+            return;
+        }
+
+        finishQuiz();
+
+        return;
+    }
+
+
+    current++;
+
+    renderQuestion();
+});
+
+
+/* =========================================================
+   PREVIOUS
+========================================================= */
+
+previousBtn.addEventListener("click",()=>{
+
+    if(current>0){
+
+        current--;
+
+        renderQuestion();
+    }
+
+});
+
+
+/* =========================================================
+   FINISH
+========================================================= */
+
+function finishQuiz(){
+
+    clearInterval(timerInterval);
+
+    let points=0;
+
+
+    quiz.forEach((q,index)=>{
+
+        if(answers[index]===q.answer){
+
+            points++;
+        }
+
+    });
+
+
+    score.textContent =
+    `${points}/${QUESTIONS_TO_ASK}`;
+
+
+    const percentage =
+    points/QUESTIONS_TO_ASK*100;
+
+
+    if(percentage===100){
+
+        resultMessage.textContent =
+        "🔥 Perfect! Tum mujhe bilkul jaante ho!";
+
+        createConfetti();
+
+    }else if(percentage>=80){
+
+        resultMessage.textContent =
+        "😍 Wow! Tum mujhe bahut achhe se jaante ho!";
+
+        createConfetti();
+
+    }else if(percentage>=60){
+
+        resultMessage.textContent =
+        "😎 Nice! Tum mujhe kaafi achhe se jaante ho.";
+
+    }else if(percentage>=40){
+
+        resultMessage.textContent =
+        "🙂 Not bad! Thoda aur mujhe samjho.";
+
+    }else{
+
+        resultMessage.textContent =
+        "😂 Lagta hai tumhe mujhe aur jaanne ki zarurat hai!";
+
+    }
+
+
+    buildReview();
+
+    showScreen(resultScreen);
+}
+
+
+/* =========================================================
+   REVIEW
+========================================================= */
+
+function buildReview(){
+
+    review.innerHTML="<h3>Answer Review</h3>";
+
+
+    quiz.forEach((q,index)=>{
+
+        const correct =
+        answers[index]===q.answer;
+
+
+        const item =
+        document.createElement("div");
+
+        item.className =
+        "review-item " +
+        (correct?"correct":"wrong");
+
+
+        const yourAnswer =
+        answers[index]===null
+        ? "Not answered"
+        : q.options[answers[index]];
+
+
+        const correctAnswer =
+        q.options[q.answer];
+
+
+        item.innerHTML=`
+
+            <div class="review-question">
+                ${escapeHTML(q.question)}
+            </div>
+
+            <div class="review-line">
+                Your answer: ${escapeHTML(yourAnswer)}
+            </div>
+
+            <div class="review-line">
+                Correct answer: ${escapeHTML(correctAnswer)}
+            </div>
+        `;
+
+
+        review.appendChild(item);
+
+    });
+}
+
+
+/* =========================================================
+   PLAY AGAIN
+========================================================= */
+
+againBtn.addEventListener("click",()=>{
+
+    startQuiz();
+
+});
+
+
+/* =========================================================
+   HOME BUTTONS
+========================================================= */
+
+createBtn.addEventListener("click",()=>{
+
+    buildCreator();
+
+    shareBox.style.display="none";
+
+    showScreen(creatorScreen);
+
+});
+
+
+playBtn.addEventListener("click",()=>{
+
+    startQuiz();
+
+});
+
+
+/* =========================================================
+   LOAD SHARED QUIZ
+========================================================= */
+
+function loadSharedQuiz(){
+
+    const params =
+    new URLSearchParams(location.search);
+
+    const encoded =
+    params.get("quiz");
+
+
+    if(!encoded){
+
+        pool =
+        defaultQuestions;
+
+        return;
+    }
+
+
+    const decoded =
+    decodeData(encoded);
+
+
+    if(
+        !Array.isArray(decoded) ||
+        decoded.length<QUESTIONS_TO_ASK
+    ){
+
+        pool =
+        defaultQuestions;
+
+        showToast(
+            "Shared quiz invalid hai."
+        );
+
+        return;
+    }
+
+
+    pool=decoded;
+
+
+    setTimeout(()=>{
+
+        startQuiz();
+
+    },300);
+}
+
+
+/* =========================================================
+   CONFETTI
+========================================================= */
+
+function createConfetti(){
+
+    for(let i=0;i<80;i++){
+
+        const piece =
+        document.createElement("div");
+
+        piece.className="confetti";
+
+        piece.style.left =
+        Math.random()*100+"vw";
+
+        piece.style.background =
+        [
+            "#a855f7",
+            "#7c3aed",
+            "#22c55e",
+            "#f59e0b",
+            "#ec4899",
+            "#38bdf8"
+        ][
+            Math.floor(Math.random()*6)
+        ];
+
+        piece.style.animationDelay =
+        Math.random()*1+"s";
+
+        document.body.appendChild(piece);
+
+
+        setTimeout(()=>{
+            piece.remove();
+        },3500);
+    }
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+let toastTimer;
+
+function showToast(message){
+
+    toast.textContent=message;
+
+    toast.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer =
+    setTimeout(()=>{
+
+        toast.classList.remove("show");
+
+    },2500);
+}
+
+
+/* =========================================================
+   SECURITY HELPERS
+========================================================= */
+
+function escapeHTML(value){
+
+    const div =
+    document.createElement("div");
+
+    div.textContent=value;
+
+    return div.innerHTML;
+}
+
+
+function escapeAttr(value){
+
+    return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/"/g,"&quot;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener("keydown",(event)=>{
+
+    if(!quizScreen.classList.contains("active"))
+        return;
+
+
+    if(event.key==="ArrowRight"){
+
+        nextBtn.click();
+
+    }
+
+    if(event.key==="ArrowLeft"){
+
+        previousBtn.click();
+
+    }
+
+});
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+createParticles();
+
+pool=defaultQuestions;
+
+loadSharedQuiz();
+
+</script>
+
+</body>
+</html>
